@@ -13,5 +13,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d/ # แมปโฟลเดอร์ที่มีไฟล์ SQL
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
 volumes:
   db_data:

@@ -7,35 +7,35 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// schema.prisma
+
+// schema.prisma
+
+model Employee {
+  id           Int           @id @default(autoincrement())
+  name         String
+  position     String
+  phoneNumber  String        @unique
+  email        String        @unique
+  password     String
+  createdAt    DateTime      @default(now())
+  role         String        @default("employee")
+  appointments Appointment[] // Relation to Appointment
+}
+
 model Appointment {
   id              Int       @id @default(autoincrement())
   name            String
-  phoneNumber     String    @map("phone_number")
-  employeeId      Int       @map("employee_id")
-  appointmentTime DateTime  @map("appointment_time")
+  phoneNumber     String
+  appointmentTime DateTime
   status          String    @default("pending")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  createdAt       DateTime  @default(now())
   
-  // Relation fields
-  employee        Employees  @relation(fields: [employeeId], references: [id])
+  employeeId      Int
+  employee        Employee  @relation(fields: [employeeId], references: [id])
 }
 
-// Assuming Employee model is already defined like this
-model Employees {
-  id          Int             @id @default(autoincrement())
-  name        String
-  position    String
-  phoneNumber String          @map("phone_number")
-  email       String          @unique
-  password    String
-  createdAt   DateTime        @default(now()) @map("created_at")
-  
-  // Relation fields
-  appointments Appointment[]
 
-  // Optional: Add role or permissions field
-  role        String          @default("employee") 
-}
 
 
 

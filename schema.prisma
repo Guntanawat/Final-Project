@@ -10,30 +10,40 @@ generator client {
 // schema.prisma
 
 // schema.prisma
+// model Employees {
+//   id            Int          @id @default(autoincrement())
+//   name          String
+//   position      String
+//   phone_number  String       @unique
+//   email         String       @unique
+//   password      String
+//   created_at    DateTime     @default(now())
+//   role          String       @default("employee")
+//   appointments   Appointments[] @relation("EmployeeAppointments")
+// }
+model Employees {
+  id            Int          @id @default(autoincrement())
+  name          String
+  position      String
+  phone_number  String       @unique
+  email         String       @unique
+  password      String
+  created_at    DateTime     @default(now())
+  appointments   Appointments[] @relation("EmployeeAppointments")
+  }
 
-model Employee {
-  id           Int           @id @default(autoincrement())
-  name         String
-  position     String
-  phoneNumber  String        @unique
-  email        String        @unique
-  password     String
-  createdAt    DateTime      @default(now())
-  role         String        @default("employee")
-  appointments Appointment[] // Relation to Appointment
-}
-
-model Appointment {
+model Appointments {
   id              Int       @id @default(autoincrement())
   name            String
-  phoneNumber     String
-  appointmentTime DateTime
-  status          String    @default("pending")
-  createdAt       DateTime  @default(now())
-  
-  employeeId      Int
-  employee        Employee  @relation(fields: [employeeId], references: [id])
+  phone_number    String
+  employee_id     Int
+  appointment_time DateTime
+  status          String     @default("pending")
+  created_at      DateTime   @default(now())
+  employee        Employees   @relation("EmployeeAppointments", fields: [employee_id], references: [id], onDelete: Cascade)
 }
+
+
 
 
 

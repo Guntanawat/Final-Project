@@ -41,8 +41,31 @@ export default function RootLayout({ children }) {
                 </Link>
               </li>
             </ul>
+            <ul>
+              <li>
+                <Link
+                  href={"employees"}
+                  className={`text-black  ${
+                    currentPath === "/back-office/employees"
+                      ? "!text-blue-600 bg-blue-50"
+                      : "hover:text-blue-600 hover:bg-blue-50"
+                  } text-[15px] block  rounded px-4 py-2.5 transition-all`}
+                >
+                  Employees
+                </Link>
+              </li>
+            </ul>
           </nav>
-          {children}
+          <div className="w-full">
+            <div className="pl-[20px]">
+              <h1 className="font-bold">
+                {currentPath
+                  .split("/")
+                  [currentPath.split("/").length - 1].toLocaleUpperCase()}
+              </h1>
+            </div>
+            {children}
+          </div>
         </div>
       </body>
     </html>

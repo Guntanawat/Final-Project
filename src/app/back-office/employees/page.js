@@ -1,32 +1,32 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import moment from "moment";
 import Link from "next/link";
-const HomePage = () => {
+const Customers = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
-  const [appointments, setAppointments] = useState([]);
-  console.log("appointments : ", appointments);
-  const fetchAppointments = async () => {
-    const response = await fetch("http://localhost:3000/api/appointments");
+  const [employees, setEmployees] = useState([]);
+  const fetchEmployees = async () => {
+    const response = await fetch("http://localhost:3000/api/employees");
     if (response.ok) {
       // ตรวจสอบว่าคำขอสำเร็จหรือไม่
       const data = await response.json(); // แปลง response เป็น JSON
       return data;
     } else {
-      throw new Error("Failed to fetch appointments");
+      throw new Error("Failed to fetch employees");
     }
   };
   useEffect(() => {
-    const getAppointments = async () => {
+    const getEmployees = async () => {
       try {
-        const appointments = await fetchAppointments();
-        setAppointments(appointments);
-        console.log("fetchEmployees: ", appointments); // จะแสดงข้อมูล JSON ที่ถูกต้อง
+        const employees = await fetchEmployees();
+        setEmployees(employees);
+        console.log("fetchEmployees: ", employees); // จะแสดงข้อมูล JSON ที่ถูกต้อง
       } catch (error) {
         console.error("Error fetching employees:", error);
       }
     };
 
-    getAppointments(); // เรียกใช้งานฟังก์ชันที่เราสร้างเพื่อดึงข้อมูล
+    getEmployees(); // เรียกใช้งานฟังก์ชันที่เราสร้างเพื่อดึงข้อมูล
   }, []);
   return (
     <div className="font-sans overflow-x-auto h-screen w-full mx-[20px] flex items-start justify-center">
@@ -37,13 +37,13 @@ const HomePage = () => {
               Name
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-800">
-              Phone
+              Email
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-800">
-              Reserve
+              Role
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-800">
-              Employee
+              Joined At
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-800">
               Actions
@@ -52,20 +52,20 @@ const HomePage = () => {
         </thead>
 
         <tbody className="whitespace-nowrap">
-          {appointments.map((appointment) => {
+          {employees.map((employee) => {
             return (
-              <tr className="hover:bg-gray-50" key={appointment.id}>
+              <tr className="hover:bg-gray-50" key={employee.id}>
                 <td className="p-4 text-[15px] text-gray-800">
-                  {appointment.name}
+                  {employee.name}
                 </td>
                 <td className="p-4 text-[15px] text-gray-800">
-                  {appointment.phone_number}
+                  {employee.email}
                 </td>
                 <td className="p-4 text-[15px] text-gray-800">
-                  {appointment.appointment_time}
+                  {employee.position}
                 </td>
                 <td className="p-4 text-[15px] text-gray-800">
-                  {appointment.employee.name}
+                  {moment(employee.created_at).format("YYYY-MM-DD")}
                 </td>
                 <td className="p-4">
                   <button className="mr-4" title="Edit">
@@ -109,4 +109,4 @@ const HomePage = () => {
     </div>
   );
 };
-export default HomePage;
+export default Customers;

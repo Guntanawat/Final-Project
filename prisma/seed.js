@@ -3,45 +3,63 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.employee.createMany({
+  // Delete existing employees and appointments to avoid unique constraint issues
+  await prisma.appointments.deleteMany({});
+  await prisma.employees.deleteMany({});
+
+  // Seed Employees
+  const employees = await prisma.employees.createMany({
     data: [
       {
-        name: "John Doe",
+        name: "Alice Barber",
         position: "Barber",
-        phone_number: "123-456-7890",
-        email: "john@example.com",
-        password: "password123",
-        role: "employee",
+        phone_number: "0111222333", // Ensure this is unique
+        email: "alice@barber.com",
+        password: "hashed_password_1",
+        created_at: new Date(),
       },
       {
-        name: "Jane Smith",
+        name: "Bob Stylist",
         position: "Stylist",
-        phone_number: "987-654-3210",
-        email: "jane@example.com",
-        password: "password123",
-        role: "employee",
+        phone_number: "0445566778", // Ensure this is unique
+        email: "bob@stylist.com",
+        password: "hashed_password_2",
+        created_at: new Date(),
       },
     ],
   });
 
-  await prisma.appointment.createMany({
+  // Fetch the created employees to get their IDs
+  const alice = await prisma.employees.findUnique({
+    where: { email: "alice@barber.com" },
+  });
+  const bob = await prisma.employees.findUnique({
+    where: { email: "bob@stylist.com" },
+  });
+
+  // Seed Appointments
+  await prisma.appointments.createMany({
     data: [
       {
-        name: "Customer A",
-        phone_number: "111-222-3333",
-        employee_id: 1,
-        appointment_time: new Date(),
+        name: "John Doe",
+        phone_number: "0123456789",
+        employee_id: alice.id, // Use Alice's ID
+        appointment_time: new Date("2024-08-15T10:00:00Z"),
         status: "pending",
+        created_at: new Date(),
       },
       {
-        name: "Customer B",
-        phone_number: "444-555-6666",
-        employee_id: 2,
-        appointment_time: new Date(),
-        status: "confirmed",
+        name: "Jane Doe",
+        phone_number: "0987654321",
+        employee_id: bob.id, // Use Bob's ID
+        appointment_time: new Date("2024-08-16T14:00:00Z"),
+        status: "pending",
+        created_at: new Date(),
       },
     ],
   });
+
+  console.log("Seed data has been inserted.");
 }
 
 main()

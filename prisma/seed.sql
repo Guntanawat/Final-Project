@@ -1,3 +1,5 @@
+-- prisma/seed.sql
+
 -- Insert data into Employees
 INSERT INTO employees (name, position, phone_number, email, password, created_at, role) VALUES
 ('Alice Barber', 'Barber', '0111222333', 'alice@barber.com', 'hashed_password_1', CURRENT_TIMESTAMP, 'employee'),

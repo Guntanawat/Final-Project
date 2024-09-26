@@ -1,21 +1,20 @@
-import prisma from "../../../lib/prisma"; // แก้ไข path ให้ถูกต้อง
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const appointments = await prisma.appointment.findMany();
-    return new Response(JSON.stringify(appointments), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    const appointments = await prisma.appointments.findMany({
+      include: {
+        employee: true, // Include the employee data associated with each appointment
+      },
     });
+    return Response.json(appointments);
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch appointments" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+    console.error("Error fetching appointments:", error);
+    return Response.json(
+      { error: "Error fetching appointments" },
+      { status: 500 }
     );
   }
 }
-
-// คุณสามารถเพิ่มฟังก์ชันสำหรับ methods อื่นๆ เช่น POST, PUT, DELETE ได้ในลักษณะเดียวกัน

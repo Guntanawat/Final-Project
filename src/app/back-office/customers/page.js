@@ -3,8 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 const Customers = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
+  return null;
   return (
-    <div className="font-sans overflow-x-auto h-screen w-full mx-[20px] flex items-center justify-center">
+    <div className="font-sans overflow-x-auto h-screen w-full mx-[20px] flex items-start justify-center">
       <table className="min-w-full bg-white">
         <thead className="bg-gray-100 whitespace-nowrap">
           <tr>

@@ -8,33 +8,60 @@ async function main() {
   await prisma.employees.deleteMany({});
 
   // Seed Employees
-  const employees = await prisma.employees.createMany({
-    data: [
-      {
-        name: "Alice Barber",
-        position: "Barber",
-        phone_number: "0111222333", // Ensure this is unique
-        email: "alice@barber.com",
-        password: "hashed_password_1",
-        created_at: new Date(),
-      },
-      {
-        name: "Bob Stylist",
-        position: "Stylist",
-        phone_number: "0445566778", // Ensure this is unique
-        email: "bob@stylist.com",
-        password: "hashed_password_2",
-        created_at: new Date(),
-      },
-    ],
+  const alice = await prisma.employees.create({
+    data: {
+      name: "Alice Barber",
+      position: "Barber",
+      phone_number: "0111222333", // Ensure this is unique
+      email: "alice@barber.com",
+      password: "hashed_password_1",
+      created_at: new Date(),
+    },
   });
 
-  // Fetch the created employees to get their IDs
-  const alice = await prisma.employees.findUnique({
-    where: { email: "alice@barber.com" },
+  const bob = await prisma.employees.create({
+    data: {
+      name: "Bob Stylist",
+      position: "Stylist",
+      phone_number: "0445566778", // Ensure this is unique
+      email: "bob@stylist.com",
+      password: "hashed_password_2",
+      created_at: new Date(),
+    },
   });
-  const bob = await prisma.employees.findUnique({
-    where: { email: "bob@stylist.com" },
+
+  // เพิ่มข้อมูลพนักงานเพิ่มเติม
+  const charlie = await prisma.employees.create({
+    data: {
+      name: "Charlie Manager",
+      position: "Manager",
+      phone_number: "0999888777", // Ensure this is unique
+      email: "charlie@manager.com",
+      password: "hashed_password_3",
+      created_at: new Date(),
+    },
+  });
+
+  const diana = await prisma.employees.create({
+    data: {
+      name: "Diana Cleaner",
+      position: "Cleaner",
+      phone_number: "0888777666", // Ensure this is unique
+      email: "diana@cleaner.com",
+      password: "hashed_password_4",
+      created_at: new Date(),
+    },
+  });
+
+  const edward = await prisma.employees.create({
+    data: {
+      name: "Edward Receptionist",
+      position: "Receptionist",
+      phone_number: "0777666555", // Ensure this is unique
+      email: "edward@receptionist.com",
+      password: "hashed_password_5",
+      created_at: new Date(),
+    },
   });
 
   // Seed Appointments

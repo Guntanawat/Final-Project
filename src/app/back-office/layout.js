@@ -2,6 +2,7 @@
 import "../globals.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ToastContainer } from "react-toastify";
 export default function RootLayout({ children }) {
   const currentPath = usePathname();
   return (
@@ -16,7 +17,7 @@ export default function RootLayout({ children }) {
             <ul>
               <li>
                 <Link
-                  href={"home-page"}
+                  href={"/back-office/home-page"}
                   className={`text-black  ${
                     currentPath === "/back-office/home-page"
                       ? "!text-blue-600 bg-blue-50"
@@ -27,24 +28,11 @@ export default function RootLayout({ children }) {
                 </Link>
               </li>
             </ul>
-            <ul>
+
+            <ul className="flex-1">
               <li>
                 <Link
-                  href={"customers"}
-                  className={`text-black  ${
-                    currentPath === "/back-office/customers"
-                      ? "!text-blue-600 bg-blue-50"
-                      : "hover:text-blue-600 hover:bg-blue-50"
-                  } text-[15px] block  rounded px-4 py-2.5 transition-all`}
-                >
-                  Customers
-                </Link>
-              </li>
-            </ul>
-            <ul>
-              <li>
-                <Link
-                  href={"employees"}
+                  href={"/back-office/employees"}
                   className={`text-black  ${
                     currentPath === "/back-office/employees"
                       ? "!text-blue-600 bg-blue-50"
@@ -52,6 +40,16 @@ export default function RootLayout({ children }) {
                   } text-[15px] block  rounded px-4 py-2.5 transition-all`}
                 >
                   Employees
+                </Link>
+              </li>
+            </ul>
+            <ul>
+              <li>
+                <Link
+                  href={"/back-office/login"}
+                  className={`text-black w-full  ${"hover:text-blue-600 hover:bg-blue-50"} text-[15px] block  rounded px-4 py-2.5 transition-all`}
+                >
+                  Logout
                 </Link>
               </li>
             </ul>
@@ -67,6 +65,7 @@ export default function RootLayout({ children }) {
             {children}
           </div>
         </div>
+        <ToastContainer />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import Image from "next/image";
 import logo from "./logo.svg";
 import mainlogo from "./mainlogo.svg";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 const BarberShopPage = () => {
   const router = usePathname();
   console.log("router : ", router);
@@ -36,9 +37,12 @@ const BarberShopPage = () => {
             >
               Home
             </a>
-            <a href="#" className="text-gray-800 hover:text-black">
-              Reserve
-            </a>
+            <Link
+              className="text-gray-800 hover:text-black"
+              href={"/clients/home/appointment"}
+            >
+              จองคิว
+            </Link>
             <a href="#" className="text-gray-800 hover:text-black">
               History
             </a>

@@ -25,8 +25,8 @@ model Employees {
   id            Int          @id @default(autoincrement())
   name          String
   position      String
-  phone_number  String       @unique
-  email         String       @unique
+  phone_number  String      
+  email         String       
   password      String
   created_at    DateTime     @default(now())
   appointments   Appointments[] @relation("EmployeeAppointments")

@@ -30,8 +30,8 @@ export async function POST(request) {
       !body.name ||
       !body.position ||
       !body.phone_number ||
-      !body.email ||
-      !body.password
+      !body.email
+      // !body.password
     ) {
       return new Response(
         JSON.stringify({ message: "Missing required fields" }),

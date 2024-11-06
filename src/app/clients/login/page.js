@@ -1,24 +1,45 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 // import { useRouter } from "next/router";
 // import Link from "next/link";
 const LoginPage = () => {
   const [gmail, setGmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      router.push("/clients/home");
+    }
+  });
   //   const router = useRouter();
-  const login = () => {
-    if (gmail == "test@gmail.com" && password == "1150") {
-      console.log("hi");
-      document.getElementById("login").click();
+  const login = async () => {
+    try {
+      const response = await axios.post("/api/login", { gmail, password });
+      const { token } = response.data;
+
+      // Store the token in localStorage or cookies
+      localStorage.setItem("token", token);
+      router.push("/clients/home");
+      // Redirect to a page or update state
+      console.log("Login successful");
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
   return (
     // <div className="min-h-screen flex items-center justify-center bg-gray-900">
     <div className="flex min-w-full min-h-screen max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Left Side - Image */}
+      <div className="w-full bg-black h-[40px] fixed items-center justify-center">
+        <Link href={"/clients/home"} className="bg-white rounded-md p-[12px]">
+          Go to home page
+        </Link>
+      </div>
       <div className="w-1/2 bg-white flex justify-center items-center p-8">
         {/* เว้นว่างสำหรับใส่รูปภาพ */}
         <Image
@@ -61,12 +82,15 @@ const LoginPage = () => {
           >
             Log in
           </button>
-          <Link id="login" href={"/clients/home"} className="hidden"></Link>
           <p className="text-center text-sm text-gray-700 mt-4">
             New User?{" "}
-            <a href="#" className="text-blue-500">
+            <Link
+              id="login"
+              href={"/clients/sign-up"}
+              className="text-blue-500"
+            >
               Sign up
-            </a>
+            </Link>
           </p>
         </form>
       </div>

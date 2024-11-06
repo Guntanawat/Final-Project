@@ -1,15 +1,39 @@
 "use client";
 import Link from "next/link";
 import React from "react";
-import { TEInput, TERipple } from "tw-elements-react";
-
+import axios from "axios";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 export default function BasicExample() {
+  const [gmail, setGmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  //   const router = useRouter();
+  const login = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post("/api/employees/login", {
+        gmail,
+        password,
+      });
+      const { token } = response.data;
+
+      // Store the token in localStorage or cookies
+      localStorage.setItem("employeeToken", token);
+      router.push("/back-office/home-page");
+      // Redirect to a page or update state
+      console.log("Login successful");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
   return (
     <div class="font-[sans-serif]">
       <div class="min-h-screen flex fle-col items-center justify-center py-6 px-4">
         <div class="grid md:grid-cols-2 items-center gap-4 max-w-6xl w-full">
           <div class="border border-gray-300 rounded-lg p-6 max-w-md shadow-[0_2px_22px_-4px_rgba(93,96,127,0.2)] max-md:mx-auto">
-            <form class="space-y-4">
+            <form class="space-y-4" onSubmit={login}>
               <div class="mb-8">
                 <h3 class="text-gray-800 text-3xl font-extrabold">Sign in</h3>
                 <p class="text-gray-500 text-sm mt-4 leading-relaxed">
@@ -25,6 +49,9 @@ export default function BasicExample() {
                 <div class="relative flex items-center">
                   <input
                     name="username"
+                    onChange={(event) => {
+                      setGmail(event.target.value);
+                    }}
                     type="text"
                     required
                     class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600"
@@ -55,6 +82,9 @@ export default function BasicExample() {
                 <div class="relative flex items-center">
                   <input
                     name="password"
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                    }}
                     type="password"
                     required
                     class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600"
@@ -102,25 +132,13 @@ export default function BasicExample() {
               </div>
 
               <div class="!mt-8">
-                <Link href={"/back-office/home-page"}>
-                  <button
-                    type="button"
-                    class="w-full shadow-xl py-3 px-4 text-sm tracking-wide rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                  >
-                    Log in
-                  </button>
-                </Link>
-              </div>
-
-              <p class="text-sm !mt-8 text-center text-gray-800">
-                {/* Don't have an account{" "} */}
-                <a
-                  href="javascript:void(0);"
-                  class="text-blue-600 font-semibold hover:underline ml-1 whitespace-nowrap"
+                <button
+                  type="submit"
+                  class="w-full shadow-xl py-3 px-4 text-sm tracking-wide rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
                 >
-                  Register here
-                </a>
-              </p>
+                  Log in
+                </button>
+              </div>
             </form>
           </div>
           <div class="lg:h-[400px] md:h-[300px] max-md:mt-8 lg:block hidden">

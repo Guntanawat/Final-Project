@@ -1,13 +1,45 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import logo from "./logo.svg";
 import mainlogo from "./mainlogo.svg";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Avatar } from "@mui/material";
+import { jwtDecode } from "jwt-decode"; // Using named import
+
 const BarberShopPage = () => {
   const router = usePathname();
-  console.log("router : ", router);
+  const router2 = useRouter();
+  const [user, setUser] = useState(undefined);
+  function getUserInfoFromToken() {
+    // Get the token from localStorage
+    const token = localStorage.getItem("token");
+
+    // Check if the token exists
+    if (!token) {
+      return null;
+    }
+
+    // Decode the token to get the user information
+    const decoded = jwtDecode(token);
+
+    return decoded;
+  }
+  useEffect(() => {
+    const userInfo = getUserInfoFromToken();
+    if (userInfo) {
+      setUser(userInfo);
+    }
+  }, []);
+
+  const logout = () => {
+    localStorage.clear();
+    setUser(undefined);
+  };
+
+  console.log("hi : ", localStorage.getItem("token"));
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header Section */}
@@ -28,6 +60,11 @@ const BarberShopPage = () => {
             {/* <Logo /> */}
           </div>
           {/* Navigation */}
+          {user?.email && (
+            <div className="flex gap-x-[20px] items-center">
+              <Avatar /> {user?.email}
+            </div>
+          )}
           <nav className="space-x-8 text-sm">
             <a
               href="#"
@@ -43,9 +80,21 @@ const BarberShopPage = () => {
             >
               จองคิว
             </Link>
-            <a href="#" className="text-gray-800 hover:text-black">
-              History
-            </a>
+            {localStorage.getItem("token") ? (
+              <label
+                className="text-gray-800 hover:text-black cursor-pointer"
+                onClick={logout}
+              >
+                logout
+              </label>
+            ) : (
+              <Link
+                className="text-gray-800 hover:text-black"
+                href={"/clients/login"}
+              >
+                login
+              </Link>
+            )}
           </nav>
         </div>
       </header>

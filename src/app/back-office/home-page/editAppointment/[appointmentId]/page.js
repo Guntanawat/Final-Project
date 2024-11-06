@@ -18,10 +18,6 @@ const schema = z.object({
   phone_number: z
     .string()
     .min(10, { message: "Phone number must be at least 10 digits" }),
-  email: z.string().email({ message: "Invalid email" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" }),
 });
 
 const ITEM_HEIGHT = 48;
@@ -86,6 +82,7 @@ export default function AddEmployee() {
     setValue,
     reset, // ใช้ reset เพื่อรีเซ็ตค่า form ทั้งหมด
     getValues,
+    watch,
   } = useForm({
     resolver: zodResolver(schema),
   });
@@ -105,13 +102,13 @@ export default function AddEmployee() {
 
       if (response.ok) {
         const { appointment } = await response.json(); // แปลง response เป็น JSON
+        console.log("🚀 ~ fetchEmployees ~ appointment:", appointment);
 
         // ใช้ reset เพื่อเซ็ตค่า form ทั้งหมด
         reset({
           name: appointment.name,
-          //   position: appointment.position,
+          position: appointment.employee_id,
           phone_number: appointment.phone_number,
-          email: appointment.email,
         });
         // setPersonName(names);
       } else {
@@ -121,6 +118,7 @@ export default function AddEmployee() {
       console.error("Error fetching employee:", error);
     }
   };
+  const selectedPositionId = watch("position");
   console.log("getValues ; ", getValues());
   return (
     <>
@@ -166,30 +164,21 @@ export default function AddEmployee() {
                 Position
               </label>
               <Select
-                // {...register("positin")}
                 labelId="demo-multiple-name-label"
                 id="demo-multiple-name"
                 className="w-full"
-                // multiple
-                value={getValues("position")}
+                value={selectedPositionId || ""}
                 onChange={(event) => {
-                  console.log("event.target.value : ", event.target.value);
                   setValue("position", event.target.value);
                 }}
-                input={<OutlinedInput label="Name" />}
+                input={<OutlinedInput label="Employee" />}
                 MenuProps={MenuProps}
               >
-                {listEmployees.map((employee) => {
-                  return (
-                    <MenuItem
-                      key={employee}
-                      value={employee.id}
-                      style={getStyles(employee.name, personName, theme)}
-                    >
-                      {employee.name}
-                    </MenuItem>
-                  );
-                })}
+                {listEmployees.map((employee) => (
+                  <MenuItem key={employee.id} value={employee.id}>
+                    {employee.name}
+                  </MenuItem>
+                ))}
               </Select>
               {errors.position?.message && (
                 <p className="text-red-700">{errors.position?.message}</p>
@@ -220,42 +209,6 @@ export default function AddEmployee() {
             </div>
           </div>
           <div className="flex flex-wrap -mx-3 mb-2">
-            <div className="w-full px-3 mb-6 md:mb-0">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-city"
-              >
-                email
-              </label>
-              <input
-                {...register("email")}
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="grid-city"
-                type="email"
-                placeholder="email"
-              />
-              {errors.email?.message && (
-                <p className="text-red-700">{errors.email?.message}</p>
-              )}
-            </div>
-            <div className="w-full px-3 mb-6 md:mb-0">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-city"
-              >
-                password
-              </label>
-              <input
-                {...register("password")}
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="grid-city"
-                type="password"
-                placeholder="password"
-              />
-              {errors.password?.message && (
-                <p className="text-red-700">{errors.password?.message}</p>
-              )}
-            </div>
             <div className="w-full h-full justify-end flex mt-4">
               <Button type="submit" variant="outlined">
                 Primary

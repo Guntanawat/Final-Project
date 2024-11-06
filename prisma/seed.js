@@ -42,6 +42,17 @@ async function main() {
     },
   });
 
+  const user = await prisma.users.create({
+    data: {
+      name: "John Doe",
+      phone_number: "0999888777", // Ensure this is unique
+      email: "johnd2d.doe@example.com",
+      password: "hashed_password_1", // Use a hashed password
+      created_at: new Date(),
+      role: "member", // Default role
+    },
+  });
+
   const diana = await prisma.employees.create({
     data: {
       name: "Diana Cleaner",

@@ -3,8 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect, useState } from "react";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { Theme, useTheme } from "@mui/material/styles";
+import Select from "@mui/material/Select";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import MenuItem from "@mui/material/MenuItem";
 import { Button } from "@mui/material";
@@ -12,6 +11,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+
 const schema = z.object({
   name: z.string().min(1, { message: "Required" }),
   position: z.string().min(1, { message: "Required" }),
@@ -34,20 +34,50 @@ const MenuProps = {
     },
   },
 };
-const names = ["Stylist", "Manager", "Cleanner"];
-function getStyles(name, personName, theme) {
-  return {
-    fontWeight: personName.includes(name)
-      ? theme.typography.fontWeightMedium
-      : theme.typography.fontWeightRegular,
-  };
-}
+const names = ["Stylist", "Manager", "Cleaner"];
+
 export default function AddEmployee() {
-  const theme = useTheme();
   const router = useRouter();
   const { employeeId } = useParams();
-  console.log("🚀 ~ AddEmployee ~ employeeId:", employeeId);
   const [personName, setPersonName] = useState([]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+    getValues,
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {},
+  });
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [employeeId]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/employees/${employeeId}`
+      );
+      if (response.ok) {
+        const { employee } = await response.json();
+
+        reset({
+          name: employee.name,
+          position: employee.position, // Ensure the position is set correctly
+          phone_number: employee.phone_number,
+          email: employee.email,
+        });
+      } else {
+        throw new Error("Failed to fetch employee");
+      }
+    } catch (error) {
+      console.error("Error fetching employee:", error);
+    }
+  };
 
   const handleAddCustomer = async (payload) => {
     try {
@@ -61,48 +91,6 @@ export default function AddEmployee() {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    reset, // ใช้ reset เพื่อรีเซ็ตค่า form ทั้งหมด
-    getValues,
-  } = useForm({
-    resolver: zodResolver(schema),
-  });
-  useEffect(() => {
-    fetchEmployees();
-  }, []); // เพิ่ม employeeId ใน dependency เพื่อให้ดึงข้อมูลใหม่เมื่อเปลี่ยน id
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/employees/${employeeId}`,
-        {
-          method: "GET",
-        }
-      );
-
-      if (response.ok) {
-        const { employee } = await response.json(); // แปลง response เป็น JSON
-
-        // ใช้ reset เพื่อเซ็ตค่า form ทั้งหมด
-        reset({
-          name: employee.name,
-          position: employee.position,
-          phone_number: employee.phone_number,
-          email: employee.email,
-        });
-        // setPersonName(names);
-      } else {
-        throw new Error("Failed to fetch employee");
-      }
-    } catch (error) {
-      console.error("Error fetching employee:", error);
-    }
-  };
-  console.log("getValues ; ", getValues());
   return (
     <>
       <div className="sticky top-0 w-full shadow-sm h-[60px] flex items-center">
@@ -122,16 +110,12 @@ export default function AddEmployee() {
         >
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3 mb-6 md:mb-0">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-first-name"
-              >
+              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                 Name
               </label>
               <input
                 {...register("name")}
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border  rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                id="grid-first-name"
+                className="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
                 type="text"
                 placeholder="Jane"
               />
@@ -140,32 +124,22 @@ export default function AddEmployee() {
               )}
             </div>
             <div className="w-full px-3">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-last-name"
-              >
+              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                 Position
               </label>
               <Select
-                // {...register("positin")}
                 labelId="demo-multiple-name-label"
                 id="demo-multiple-name"
                 className="w-full"
-                // multiple
-                value={getValues("position")}
+                value={getValues("position") || ""} // Ensure value is updated
                 onChange={(event) => {
-                  console.log("event : ", event.target.value);
                   setValue("position", event.target.value);
                 }}
-                input={<OutlinedInput label="Name" />}
+                input={<OutlinedInput label="Position" />}
                 MenuProps={MenuProps}
               >
                 {names.map((name) => (
-                  <MenuItem
-                    key={name}
-                    value={name}
-                    style={getStyles(name, personName, theme)}
-                  >
+                  <MenuItem key={name} value={name}>
                     {name}
                   </MenuItem>
                 ))}
@@ -177,39 +151,27 @@ export default function AddEmployee() {
           </div>
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-password"
-              >
+              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                 Phone number
               </label>
               <input
                 {...register("phone_number")}
                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="grid-password"
                 type="text"
-                // placeholder="******************"
               />
               {errors.phone_number?.message && (
                 <p className="text-red-700">{errors.phone_number?.message}</p>
               )}
-              {/* <p className="text-gray-600 text-xs italic">
-              Make it as long and as crazy as d like
-            </p> */}
             </div>
           </div>
           <div className="flex flex-wrap -mx-3 mb-2">
             <div className="w-full px-3 mb-6 md:mb-0">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-city"
-              >
-                email
+              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                Email
               </label>
               <input
                 {...register("email")}
                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="grid-city"
                 type="email"
                 placeholder="email"
               />
@@ -218,16 +180,12 @@ export default function AddEmployee() {
               )}
             </div>
             <div className="w-full px-3 mb-6 md:mb-0">
-              <label
-                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                for="grid-city"
-              >
-                password
+              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                Password
               </label>
               <input
                 {...register("password")}
                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="grid-city"
                 type="password"
                 placeholder="password"
               />

@@ -6,9 +6,6 @@ export async function GET(request) {
   try {
     const searchParams = new URL(request.url).searchParams;
     const count = searchParams.get("count") === "true"; // เช็คว่าค่า count เป็น "true" หรือไม่
-
-    console.log("🚀 ~ GET ~ count:", count);
-
     if (count) {
       // ดึงจำนวนพนักงานที่ไม่ใช่แอดมิน พร้อมนับจำนวนการนัดหมายของแต่ละคน
       const employeesWithAppointmentCount = await prisma.employees.findMany({

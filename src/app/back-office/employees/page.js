@@ -4,10 +4,27 @@ import moment from "moment";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 const Customers = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
   const [employees, setEmployees] = useState([]);
   console.log("🚀 ~ Customers ~ employees:", employees);
+  function getUserInfoFromToken() {
+    // Get the token from localStorage
+    const token = localStorage.getItem("employeeToken");
+
+    // Check if the token exists
+    if (!token) {
+      return null;
+    }
+
+    // Decode the token to get the user information
+    const decoded = jwtDecode(token);
+
+    return decoded;
+  }
+  const user = getUserInfoFromToken();
+  console.log("🚀 ~ user:", user);
   const fetchEmployees = async () => {
     const response = await fetch(
       "http://localhost:3000/api/employees?count=true"
@@ -45,6 +62,8 @@ const Customers = () => {
       toast.error("Failed to delete the appointment.");
     }
   };
+  if (user.position !== "admin")
+    window.location.href = "/back-office/home-page";
   return (
     <>
       <Link href="/back-office/employees/addEmployee">

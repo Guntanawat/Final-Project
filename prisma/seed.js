@@ -12,7 +12,7 @@ async function main() {
   const alice = await prisma.employees.create({
     data: {
       name: "Alice Barber",
-      position: "Barber",
+      position: "admin",
       phone_number: "0111222333", // Ensure this is unique
       email: "alice@barber.com",
       password: "hashed_password_1",

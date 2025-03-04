@@ -136,12 +136,14 @@ const BookingPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {moment(appointment.appointment_time).format(
-                          "MMMM D, YYYY"
-                        )}
+                        {moment(appointment?.appointment_time)
+                          .utc()
+                          .format("MMMM D, YYYY")}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {moment(appointment.appointment_time).format("h:mm A")}
+                        {moment(appointment?.appointment_time)
+                          .utc()
+                          .format("HH:mm")}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

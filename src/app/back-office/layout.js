@@ -29,6 +29,7 @@ export default function RootLayout({ children }) {
   }
   useEffect(() => {
     const userInfo = getUserInfoFromToken();
+    console.log("🚀 ~ useEffect ~ userInfo:", userInfo);
     if (userInfo) {
       setUser(userInfo);
     }
@@ -66,34 +67,38 @@ export default function RootLayout({ children }) {
                 </Link>
               </li>
             </ul>
-            <ul>
-              <li>
-                <Link
-                  href={"/back-office/users"}
-                  className={`text-black  ${
-                    currentPath === "/back-office/users"
-                      ? "!text-blue-600 bg-blue-50"
-                      : "hover:text-blue-600 hover:bg-blue-50"
-                  } text-[15px] block  rounded px-4 py-2.5 transition-all`}
-                >
-                  Users
-                </Link>
-              </li>
-            </ul>
-            <ul className="flex-1">
-              <li>
-                <Link
-                  href={"/back-office/employees"}
-                  className={`text-black  ${
-                    currentPath === "/back-office/employees"
-                      ? "!text-blue-600 bg-blue-50"
-                      : "hover:text-blue-600 hover:bg-blue-50"
-                  } text-[15px] block  rounded px-4 py-2.5 transition-all`}
-                >
-                  Employees
-                </Link>
-              </li>
-            </ul>
+            {user?.position === "admin" && (
+              <ul>
+                <li>
+                  <Link
+                    href={"/back-office/users"}
+                    className={`text-black  ${
+                      currentPath === "/back-office/users"
+                        ? "!text-blue-600 bg-blue-50"
+                        : "hover:text-blue-600 hover:bg-blue-50"
+                    } text-[15px] block  rounded px-4 py-2.5 transition-all`}
+                  >
+                    Users
+                  </Link>
+                </li>
+              </ul>
+            )}
+            {user?.position === "admin" && (
+              <ul className="flex-1">
+                <li>
+                  <Link
+                    href={"/back-office/employees"}
+                    className={`text-black  ${
+                      currentPath === "/back-office/employees"
+                        ? "!text-blue-600 bg-blue-50"
+                        : "hover:text-blue-600 hover:bg-blue-50"
+                    } text-[15px] block  rounded px-4 py-2.5 transition-all`}
+                  >
+                    Employees
+                  </Link>
+                </li>
+              </ul>
+            )}
 
             <ul>
               <li>

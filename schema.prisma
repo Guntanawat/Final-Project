@@ -16,6 +16,7 @@ model Users {
   created_at    DateTime  @default(now())
   // is_verified   Boolean   @default(false) // For email verification status
   role          String    @default("member") // Role for access control (e.g., "member", "admin")
+  appointments  Appointments[]
 }
 
 model Employees {
@@ -26,20 +27,38 @@ model Employees {
   email         String       
   password      String
   created_at    DateTime     @default(now())
-  appointments   Appointments[] @relation("EmployeeAppointments")
-  }
+  appointments   Appointments[] // ✅ ไม่ต้องกำหนด @relation ในฝั่งนี้
+}
+
+
+// model Appointments {
+//   id              Int       @id @default(autoincrement())
+//   name            String
+//   phone_number    String
+//   employee_id     Int
+//   user_id         Int
+//   appointment_time DateTime
+//   status          String     @default("pending")
+//   created_at      DateTime   @default(now())
+//   employee        Employees   @relation("EmployeeAppointments", fields: [employee_id], references: [id], onDelete: Cascade)
+//   user            Users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+// }
+
 
 model Appointments {
   id              Int       @id @default(autoincrement())
   name            String
   phone_number    String
-  employee_id     Int
   appointment_time DateTime
   status          String     @default("pending")
   created_at      DateTime   @default(now())
-  employee        Employees   @relation("EmployeeAppointments", fields: [employee_id], references: [id], onDelete: Cascade)
-}
 
+  employee_id     Int
+  user_id         Int // ✅ ตรวจสอบว่ามีหรือไม่ (ต้องมีถ้าจะเชื่อมกับ Users)
+
+ employee        Employees   @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  user            Users     @relation(fields: [user_id], references: [id], onDelete: Cascade) // ✅ ตรวจสอบว่ามีหรือไม่
+}
 
 
 

@@ -4,7 +4,13 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const employees = await prisma.employees.findMany(); // ตรวจสอบชื่อตารางและวิธีการเรียกใช้งาน
+    const employees = await prisma.employees.findMany({
+      where: {
+        position: {
+          not: "admin",
+        },
+      },
+    }); // ตรวจสอบชื่อตารางและวิธีการเรียกใช้งาน
     return Response.json(employees);
   } catch (error) {
     console.error("Error fetching employees:", error);

@@ -3,13 +3,15 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET(request, { params }) {
-  const appointmentId = params.appointmentId;
+  const employeeId = params.employeeId;
+  console.log("🚀 ~ GET ~ employeeId:", employeeId);
 
   try {
     // ตรวจสอบว่ามี employee ที่ต้องการลบหรือไม่
-    const appointment = await prisma.appointments.findFirst({
-      where: { id: Number(appointmentId) }, // แปลง id เป็นตัวเลขหากจำเป็น
+    const appointment = await prisma.appointments.findMany({
+      where: { user_id: Number(employeeId) },
     });
+    console.log("🚀 ~ GET ~ appointment:", appointment);
 
     if (!appointment) {
       return new Response(
@@ -23,6 +25,7 @@ export async function GET(request, { params }) {
     // คืนค่าข้อมูล appointment ที่ถูกลบ
     return new Response(
       JSON.stringify({
+        message: "appointment deleted successfully",
         appointment,
       }),
       { status: 200 }
@@ -36,13 +39,14 @@ export async function GET(request, { params }) {
     });
   }
 }
+
 export async function PUT(request, { params }) {
-  const appointmentId = params.appointmentId;
+  const employeeId = params.employeeId;
 
   try {
     // ตรวจสอบว่ามี employee ที่ต้องการอัปเดตหรือไม่
     const Appointment = await prisma.appointments.findFirst({
-      where: { id: Number(appointmentId) }, // แปลง id เป็นตัวเลขหากจำเป็น
+      where: { id: Number(employeeId) }, // แปลง id เป็นตัวเลขหากจำเป็น
     });
 
     if (!Appointment) {
@@ -59,12 +63,11 @@ export async function PUT(request, { params }) {
 
     // อัปเดตข้อมูล Appointment ตาม id
     const updatedAppointment = await prisma.appointments.update({
-      where: { id: Number(appointmentId) },
+      where: { id: Number(employeeId) },
       data: {
         name: body.name,
         phone_number: body.phone_number,
-        employee_id: body.position,
-        user_id: body.user_id,
+        employee_id: body.position, // Use Alice's ID
         appointment_time: new Date("2024-08-15T10:00:00Z"),
         status: "pending",
       },
@@ -73,19 +76,16 @@ export async function PUT(request, { params }) {
     // คืนค่าข้อมูล employee ที่อัปเดตสำเร็จ
     return new Response(
       JSON.stringify({
-        message: "Appointment updated successfully",
+        message: "Employee updated successfully",
         updatedAppointment,
       }),
       { status: 200 }
     );
   } catch (error) {
     // คืนค่าข้อความแจ้งเตือนหากเกิดข้อผิดพลาด
-    return new Response(
-      JSON.stringify({ error: "Error updating appointment" }),
-      {
-        status: 500,
-      }
-    );
+    return new Response(JSON.stringify({ error: "Error updating employee" }), {
+      status: 500,
+    });
   }
 }
 
@@ -95,7 +95,7 @@ export async function DELETE(request, { params }) {
   try {
     const appointments = await prisma.appointments.delete({
       where: {
-        id: parseInt(params.appointmentId),
+        id: parseInt(params.employeeId),
       },
     });
     return Response.json(

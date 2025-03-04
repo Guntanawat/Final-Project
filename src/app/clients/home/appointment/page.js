@@ -70,6 +70,7 @@ export default function AddEmployee() {
     return decoded;
   }
   const userInfo = getUserInfoFromToken();
+  console.log("🚀 ~ AddEmployee ~ userInfo:", userInfo);
   const fetchEmployeesList = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/employees`, {
@@ -92,7 +93,7 @@ export default function AddEmployee() {
       await axios.post(
         `http://localhost:3000/api/appointments`,
         // `http://localhost:3000/api/appointments/${appointmentId}`,
-        payload
+        { ...payload, user_id: userInfo?.userId }
       );
       router.push("/clients/home");
     } catch (error) {

@@ -6,6 +6,7 @@ async function main() {
   // Delete existing employees and appointments to avoid unique constraint issues
   await prisma.appointments.deleteMany({});
   await prisma.employees.deleteMany({});
+  await prisma.users.deleteMany({});
 
   // Seed Employees
   const alice = await prisma.employees.create({
@@ -76,25 +77,29 @@ async function main() {
   });
 
   // Seed Appointments
-  await prisma.appointments.createMany({
-    data: [
-      {
-        name: "John Doe",
-        phone_number: "0123456789",
-        employee_id: alice.id, // Use Alice's ID
-        appointment_time: new Date("2024-08-15T10:00:00Z"),
-        status: "pending",
-        created_at: new Date(),
-      },
-      {
-        name: "Jane Doe",
-        phone_number: "0987654321",
-        employee_id: bob.id, // Use Bob's ID
-        appointment_time: new Date("2024-08-16T14:00:00Z"),
-        status: "pending",
-        created_at: new Date(),
-      },
-    ],
+  // ✅ ลบ createMany() และใช้ create() แทน
+  await prisma.appointments.create({
+    data: {
+      name: "John Doe",
+      phone_number: "0123456789",
+      appointment_time: new Date("2024-08-15T10:00:00Z"),
+      status: "pending",
+      created_at: new Date(),
+      employee: { connect: { id: alice.id } }, // ✅ เชื่อมกับ employee
+      user: { connect: { id: user.id } }, // ✅ เชื่อมกับ user
+    },
+  });
+
+  await prisma.appointments.create({
+    data: {
+      name: "Jane Doe",
+      phone_number: "0987654321",
+      appointment_time: new Date("2024-08-16T14:00:00Z"),
+      status: "pending",
+      created_at: new Date(),
+      employee: { connect: { id: bob.id } },
+      user: { connect: { id: user.id } },
+    },
   });
 
   console.log("Seed data has been inserted.");

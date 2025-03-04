@@ -80,6 +80,12 @@ const BarberShopPage = () => {
             >
               จองคิว
             </Link>
+            <Link
+              className="text-gray-800 hover:text-black"
+              href={"/clients/home/booking"}
+            >
+              คิวที่จอง
+            </Link>
             {localStorage.getItem("token") ? (
               <label
                 className="text-gray-800 hover:text-black cursor-pointer"

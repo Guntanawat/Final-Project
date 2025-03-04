@@ -3,12 +3,35 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode"; // Using named import
 const HomePage = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
   const [appointments, setAppointments] = useState([]);
   console.log("appointments : ", appointments);
+
+  function getUserInfoFromToken() {
+    // Get the token from localStorage
+    const token = localStorage.getItem("employeeToken");
+
+    // Check if the token exists
+    if (!token) {
+      return null;
+    }
+
+    // Decode the token to get the user information
+    const decoded = jwtDecode(token);
+
+    return decoded;
+  }
+  const user = getUserInfoFromToken();
+
   const fetchAppointments = async () => {
-    const response = await fetch("http://localhost:3000/api/appointments");
+    const isAdmin = user?.position === "admin" ? true : false;
+    const response = await fetch(
+      `http://localhost:3000/api/appointments?employee_id=${
+        isAdmin ? "" : user.employeeId
+      }`
+    );
     if (response.ok) {
       // ตรวจสอบว่าคำขอสำเร็จหรือไม่
       const data = await response.json(); // แปลง response เป็น JSON

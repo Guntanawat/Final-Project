@@ -9,11 +9,13 @@ const Customers = () => {
   const [employees, setEmployees] = useState([]);
   console.log("🚀 ~ Customers ~ employees:", employees);
   const fetchEmployees = async () => {
-    const response = await fetch("http://localhost:3000/api/employees");
+    const response = await fetch(
+      "http://localhost:3000/api/employees?count=true"
+    );
     if (response.ok) {
       // ตรวจสอบว่าคำขอสำเร็จหรือไม่
       const data = await response.json(); // แปลง response เป็น JSON
-      setEmployees(data);
+      setEmployees(data.employees);
       // return data;
     } else {
       throw new Error("Failed to fetch employees");
@@ -32,16 +34,6 @@ const Customers = () => {
 
     getEmployees(); // เรียกใช้งานฟังก์ชันที่เราสร้างเพื่อดึงข้อมูล
   }, []);
-  const handleAddCustomer = () => {
-    const payload = {
-      name: "JoeyBoy",
-      position: "Manager",
-      phone_number: "1234567899",
-      email: "johndoe@example2.com",
-      password: "securepassword",
-    };
-    axios.post("http://localhost:3000/api/employees", payload);
-  };
   const deleteEmployee = async (employeeId) => {
     const reponse = await axios.delete(
       `http://localhost:3000/api/employees/${employeeId}`
@@ -70,11 +62,12 @@ const Customers = () => {
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Name
               </th>
-              <th className="p-4 text-left text-xs font-semibold text-gray-800">
-                Email
-              </th>
+
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Role
+              </th>
+              <th className="p-4 text-left text-xs font-semibold text-gray-800">
+                Count
               </th>
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Joined At
@@ -94,10 +87,10 @@ const Customers = () => {
                     {employee.name}
                   </td>
                   <td className="p-4 text-[15px] text-gray-800">
-                    {employee.email}
+                    {employee.position}
                   </td>
                   <td className="p-4 text-[15px] text-gray-800">
-                    {employee.position}
+                    {employee?._count?.appointments}
                   </td>
                   <td className="p-4 text-[15px] text-gray-800">
                     {moment(employee.created_at).format("YYYY-MM-DD")}

@@ -21,7 +21,7 @@ export default function BasicExample() {
 
       // Store the token in localStorage or cookies
       localStorage.setItem("employeeToken", token);
-      router.push("/back-office/home-page");
+      window.location.href = "/back-office/home-page";
       // Redirect to a page or update state
       console.log("Login successful");
     } catch (error) {

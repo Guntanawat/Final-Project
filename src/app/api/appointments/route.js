@@ -31,22 +31,82 @@ export async function GET(request) {
   }
 }
 
+// export async function POST(request) {
+//   try {
+//     const body = await request.json();
+
+//     // ตรวจสอบข้อมูลที่จำเป็นตาม schema และแปลงค่าให้ถูกต้อง
+//     const appointmentData = {
+//       name: body.name,
+//       phone_number: body.phone_number?.toString(),
+//       employee_id: Number(body.employee_id || body.position), // รองรับทั้ง employee_id และ position
+//       user_id: Number(body.user_id || body.userId), // รองรับทั้ง user_id และ userId
+//       appointment_time: new Date(body.date_time || body.appointment_time), // รองรับทั้ง date_time และ appointment_time
+//       status: "pending",
+//     };
+
+//     // ตรวจสอบว่าข้อมูลครบถ้วน
+//     if (
+//       !appointmentData.name ||
+//       !appointmentData.phone_number ||
+//       !appointmentData.employee_id ||
+//       !appointmentData.user_id ||
+//       isNaN(appointmentData.appointment_time.getTime())
+//     ) {
+//       return new Response(
+//         JSON.stringify({
+//           message: "Missing or invalid required fields",
+//           receivedData: body,
+//           parsedData: appointmentData,
+//         }),
+//         { status: 400 }
+//       );
+//     }
+
+//     // สร้าง appointment ใหม่
+//     console.log("🚀 ~ POST ~ appointmentData:", appointmentData);
+//     const newAppointment = await prisma.appointments.create({
+//       data: appointmentData,
+//       include: {
+//         employee: true,
+//         user: true,
+//       },
+//     });
+
+//     return new Response(
+//       JSON.stringify({
+//         message: "Appointment created successfully",
+//         appointment: newAppointment,
+//       }),
+//       { status: 201 }
+//     );
+//   } catch (error) {
+//     console.error("Error creating appointment:", error);
+//     return new Response(
+//       JSON.stringify({
+//         error: "Error creating appointment",
+//         details: error.message,
+//         stack: error.stack, // เพิ่ม stack trace เพื่อ debug
+//       }),
+//       { status: 500 }
+//     );
+//   }
+// }
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log("Request body:", body);
 
-    // ตรวจสอบข้อมูลที่จำเป็นตาม schema และแปลงค่าให้ถูกต้อง
+    // แปลงค่าจาก request
     const appointmentData = {
       name: body.name,
       phone_number: body.phone_number?.toString(),
-      employee_id: Number(body.employee_id || body.position), // รองรับทั้ง employee_id และ position
-      user_id: Number(body.user_id || body.userId), // รองรับทั้ง user_id และ userId
-      appointment_time: new Date(body.date_time || body.appointment_time), // รองรับทั้ง date_time และ appointment_time
+      employee_id: Number(body.employee_id || body.position),
+      user_id: Number(body.user_id || body.userId),
+      appointment_time: new Date(body.date_time || body.appointment_time),
       status: "pending",
     };
 
-    // ตรวจสอบว่าข้อมูลครบถ้วน
+    // ตรวจสอบว่าข้อมูลครบหรือไม่
     if (
       !appointmentData.name ||
       !appointmentData.phone_number ||
@@ -64,8 +124,48 @@ export async function POST(request) {
       );
     }
 
-    // สร้าง appointment ใหม่
-    console.log("🚀 ~ POST ~ appointmentData:", appointmentData);
+    // 📌 คำนวณช่วงเวลาของการนัดหมาย (30 นาที)
+    const appointmentDuration = 30 * 60 * 1000; // 30 นาทีเป็นมิลลิวินาที
+    const requestedTime = new Date(appointmentData.appointment_time);
+    const endTime = new Date(requestedTime.getTime() + appointmentDuration);
+
+    // 📌 ค้นหาการจองที่ทับซ้อนกับช่วงเวลานี้
+    const overlappingAppointments = await prisma.appointments.findMany({
+      where: {
+        employee_id: appointmentData.employee_id,
+        status: { not: "cancelled" }, // ไม่รวมที่ถูกยกเลิก
+        OR: [
+          {
+            appointment_time: {
+              gte: requestedTime, // การจองเริ่มหลังจาก หรือ เท่ากับ requestedTime
+              lt: endTime, // และอยู่ก่อนเวลาสิ้นสุด
+            },
+          },
+          {
+            appointment_time: {
+              lt: requestedTime, // มีการจองที่เริ่มก่อนเวลาที่ร้องขอ
+              gte: new Date(requestedTime.getTime() - appointmentDuration), // และจบภายในช่วง 30 นาทีของ requestedTime
+            },
+          },
+        ],
+      },
+    });
+
+    // 📌 ถ้าพบว่ามีการจองซ้ำ ให้แจ้งเตือนลูกค้า
+    if (overlappingAppointments.length > 0) {
+      return new Response(
+        JSON.stringify({
+          message: "Selected time is unavailable. Please choose another time.",
+          existingAppointments: overlappingAppointments.map((appt) => ({
+            id: appt.id,
+            time: appt.appointment_time,
+          })),
+        }),
+        { status: 400 }
+      );
+    }
+
+    // ✅ เวลาผ่านเงื่อนไข สามารถสร้างการจองใหม่ได้
     const newAppointment = await prisma.appointments.create({
       data: appointmentData,
       include: {
@@ -87,7 +187,7 @@ export async function POST(request) {
       JSON.stringify({
         error: "Error creating appointment",
         details: error.message,
-        stack: error.stack, // เพิ่ม stack trace เพื่อ debug
+        stack: error.stack,
       }),
       { status: 500 }
     );

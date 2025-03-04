@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import moment from "moment";
 import Link from "next/link";
+import axios from "axios";
 
 const BookingPage = () => {
   const [listAppointment, setListAppointment] = useState([]);
@@ -16,7 +17,7 @@ const BookingPage = () => {
 
   const userInfo = getUserInfoFromToken();
 
-  const fetchEmployeesList = async () => {
+  const fetchAppointments = async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -28,7 +29,7 @@ const BookingPage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setListAppointment(data.appointment);
+        setListAppointment(data.appointments);
       } else {
         throw new Error("Failed to fetch appointments");
       }
@@ -40,9 +41,18 @@ const BookingPage = () => {
   };
 
   useEffect(() => {
-    fetchEmployeesList();
+    fetchAppointments();
   }, []);
-
+  const deleteAppointment = async (appointmentId) => {
+    const reponse = await axios.delete(
+      `http://localhost:3000/api/appointments/${appointmentId}`
+    );
+    if (reponse.status === 200) {
+      await fetchAppointments();
+    } else {
+      toast.error("Failed to delete the appointment.");
+    }
+  };
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "pending":
@@ -55,7 +65,7 @@ const BookingPage = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
-
+  console.log("🚀 ~ BookingPage ~ listAppointment:", listAppointment);
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -145,9 +155,7 @@ const BookingPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-3">
-                        <Link
-                          href={`/clients/home/booking/edit/${appointment.id}`}
-                        >
+                        <Link href={`/clients/home/booking/${appointment.id}`}>
                           <button className="text-blue-600 hover:text-blue-900">
                             Edit
                           </button>

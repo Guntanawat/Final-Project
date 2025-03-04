@@ -3,40 +3,37 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET(request, { params }) {
-  const employeeId = params.employeeId;
-  console.log("🚀 ~ GET ~ employeeId:", employeeId);
+  const employeeId = Number(params.employeeId);
+  console.log("🚀 ~ API Received employeeId:", employeeId);
 
   try {
-    // ตรวจสอบว่ามี employee ที่ต้องการลบหรือไม่
-    const appointment = await prisma.appointments.findMany({
-      where: { user_id: Number(employeeId) },
+    const appointments = await prisma.appointments.findMany({
+      where: { user_id: employeeId },
+      include: {
+        employee: {
+          select: { name: true },
+        },
+      },
     });
-    console.log("🚀 ~ GET ~ appointment:", appointment);
 
-    if (!appointment) {
+    console.log("🚀 ~ Appointments found:", appointments);
+
+    if (!appointments || appointments.length === 0) {
       return new Response(
-        JSON.stringify({ message: "appointment not found" }),
-        {
-          status: 404,
-        }
+        JSON.stringify({ message: "Appointments not found" }),
+        { status: 404 }
       );
     }
 
-    // คืนค่าข้อมูล appointment ที่ถูกลบ
-    return new Response(
-      JSON.stringify({
-        message: "appointment deleted successfully",
-        appointment,
-      }),
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error deleting employee:", error);
-
-    // คืนค่าข้อความแจ้งเตือนหากเกิดข้อผิดพลาด
-    return new Response(JSON.stringify({ error: "Error deleting employee" }), {
-      status: 500,
+    return new Response(JSON.stringify({ message: "Success", appointments }), {
+      status: 200,
     });
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    return new Response(
+      JSON.stringify({ error: "Error fetching appointments" }),
+      { status: 500 }
+    );
   }
 }
 

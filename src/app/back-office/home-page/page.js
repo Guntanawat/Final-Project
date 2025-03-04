@@ -54,6 +54,9 @@ const HomePage = () => {
     }
   };
   useEffect(() => {
+    // if (!user?.position) {
+    //   location.reload();
+    // }
     const getAppointments = async () => {
       try {
         const appointments = await fetchAppointments();

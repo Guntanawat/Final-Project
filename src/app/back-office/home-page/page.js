@@ -4,6 +4,7 @@ import Link from "next/link";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode"; // Using named import
+import moment from "moment";
 const HomePage = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
   const [appointments, setAppointments] = useState([]);
@@ -105,7 +106,17 @@ const HomePage = () => {
                   {appointment.phone_number}
                 </td>
                 <td className="p-4 text-[15px] text-gray-800">
-                  {appointment.appointment_time}
+                  {/* {appointment.appointment_time} */}
+                  <div className="text-sm text-gray-900">
+                    {moment(appointment?.appointment_time)
+                      .utc()
+                      .format("MMMM D, YYYY")}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {moment(appointment?.appointment_time)
+                      .utc()
+                      .format("HH:mm")}
+                  </div>
                 </td>
                 <td className="p-4 text-[15px] text-gray-800">
                   {appointment.employee.name}

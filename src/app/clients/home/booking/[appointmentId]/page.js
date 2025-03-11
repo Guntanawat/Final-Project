@@ -280,6 +280,7 @@ export default function AddEmployee() {
                 <input
                   type="date"
                   className="w-full border rounded px-3 py-2"
+                  min={new Date().toISOString().split("T")[0]} // ป้องกันการเลือกวันก่อนหน้า
                   {...register("date_time")}
                 />
               </div>

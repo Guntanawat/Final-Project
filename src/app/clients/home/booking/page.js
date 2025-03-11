@@ -149,10 +149,10 @@ const BookingPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          appointment.status
+                          "confirmed"
                         )}`}
                       >
-                        {appointment.status}
+                        {"Booked"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

@@ -39,6 +39,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   const appointmentId = Number(params.appointmentId);
+  console.log("🚀 ~ PUT ~ appointmentId:", appointmentId);
 
   try {
     // 📌 ค้นหานัดหมายที่ต้องการอัปเดต
@@ -55,6 +56,7 @@ export async function PUT(request, { params }) {
 
     // 📌 อ่านข้อมูลจาก request body
     const body = await request.json();
+    console.log("🚀 ~ PUT ~ body:", body);
     const updatedAppointmentData = {
       name: body.name,
       phone_number: body.phone_number,
@@ -64,13 +66,15 @@ export async function PUT(request, { params }) {
       status: body.status || "pending",
     };
 
+    console.log("🚀 ~ PUT ~ updatedAppointmentData:", updatedAppointmentData);
+
     // 📌 ตรวจสอบว่าข้อมูลครบหรือไม่
     if (
       !updatedAppointmentData.name ||
       !updatedAppointmentData.phone_number ||
       !updatedAppointmentData.employee_id ||
       !updatedAppointmentData.user_id ||
-      isNaN(updatedAppointmentData.appointment_time.getTime())
+      isNaN(new Date(updatedAppointmentData.appointment_time).getTime())
     ) {
       return new Response(
         JSON.stringify({
@@ -82,49 +86,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // 📌 คำนวณช่วงเวลาของการนัดหมาย (30 นาที)
-    const appointmentDuration = 30 * 60 * 1000; // 30 นาทีเป็นมิลลิวินาที
-    const requestedTime = new Date(updatedAppointmentData.appointment_time);
-    const endTime = new Date(requestedTime.getTime() + appointmentDuration);
-
-    // 📌 ตรวจสอบว่ามีการจองที่ทับซ้อนกันหรือไม่
-    const overlappingAppointments = await prisma.appointments.findMany({
-      where: {
-        employee_id: updatedAppointmentData.employee_id, // ✅ เช็คเฉพาะช่างคนนั้น
-        status: { not: "cancelled" }, // ✅ ไม่รวมการจองที่ถูกยกเลิก
-        id: { not: appointmentId }, // ✅ ต้องไม่ใช่การอัปเดตตัวเอง
-        OR: [
-          {
-            appointment_time: {
-              gte: requestedTime, // เริ่มหลังจากหรือเท่ากับเวลาที่ลูกค้าขอ
-              lt: endTime, // และอยู่ก่อนเวลาสิ้นสุดของการนัดหมาย (30 นาที)
-            },
-          },
-          {
-            appointment_time: {
-              lt: requestedTime, // มีการจองที่เริ่มก่อนเวลาที่ร้องขอ
-              gte: new Date(requestedTime.getTime() - appointmentDuration), // และจบภายในช่วง 30 นาทีของ requestedTime
-            },
-          },
-        ],
-      },
-    });
-
-    // 📌 ถ้าพบว่ามีการจองซ้ำ ให้แจ้งเตือนลูกค้า
-    if (overlappingAppointments.length > 0) {
-      return new Response(
-        JSON.stringify({
-          message: "Selected time is unavailable. Please choose another time.",
-          existingAppointments: overlappingAppointments.map((appt) => ({
-            id: appt.id,
-            time: appt.appointment_time,
-          })),
-        }),
-        { status: 400 }
-      );
-    }
-
-    // ✅ อัปเดตข้อมูล Appointment ได้
+    // ✅ อัปเดตข้อมูล Appointment โดยไม่เช็คเวลาซ้ำ
     const updatedAppointment = await prisma.appointments.update({
       where: { id: appointmentId },
       data: updatedAppointmentData,

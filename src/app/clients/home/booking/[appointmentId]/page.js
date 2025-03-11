@@ -12,6 +12,9 @@ import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+import moment from "moment";
+import { jwtDecode } from "jwt-decode";
 const schema = z.object({
   name: z.string().min(1, { message: "Required" }),
   position: z.number().min(1, { message: "Required" }),
@@ -38,6 +41,50 @@ function getStyles(name, personName, theme) {
       : theme.typography.fontWeightRegular,
   };
 }
+const TimeSlots = ({
+  selectedDate,
+  onSelectTime,
+  bookedTimes,
+  selectedTime,
+}) => {
+  const startTime = dayjs(selectedDate).set("hour", 9).set("minute", 0);
+  const endTime = dayjs(selectedDate).set("hour", 20).set("minute", 30);
+  const timeSlots = [];
+  let currentTime = startTime;
+
+  while (currentTime.isBefore(endTime)) {
+    timeSlots.push(currentTime);
+    currentTime = currentTime.add(30, "minute");
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {timeSlots.map((time, index) => {
+        const formattedTime = time.format("HH:mm");
+        const isBooked = bookedTimes?.includes(formattedTime);
+        const isActive = selectedTime?.format("HH:mm") === formattedTime;
+
+        return (
+          <button
+            key={index}
+            className={`w-full py-2 rounded-md border transition-all ${
+              isBooked
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : isActive
+                ? "bg-blue-600 text-white border-blue-600" // ✅ Active state
+                : "bg-white text-gray-900 border-gray-300 hover:bg-blue-500 hover:text-white"
+            }`}
+            onClick={() => !isBooked && onSelectTime(time)}
+            disabled={isBooked}
+          >
+            {formattedTime}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 export default function AddEmployee() {
   const theme = useTheme();
   const router = useRouter();
@@ -45,6 +92,14 @@ export default function AddEmployee() {
   console.log("🚀 ~ AddEmployee ~ appointmentId:", appointmentId);
   const [personName, setPersonName] = useState([]);
   const [listEmployees, setListEmployees] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
+  console.log("🚀 ~ AddEmployee ~ bookedTimes:", bookedTimes);
+  const [selectedTime, setSelectedTime] = useState(null);
+  function getUserInfoFromToken() {
+    const token = localStorage.getItem("token");
+    return token ? jwtDecode(token) : null;
+  }
+  const userInfo = getUserInfoFromToken();
   const fetchEmployeesList = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/employees`, {
@@ -63,11 +118,18 @@ export default function AddEmployee() {
     }
   };
   const handleAddCustomer = async (payload) => {
+    if (!selectedTime) {
+      window.alert("กรุณาเลือกเวลานัดหมายก่อนทำการจอง");
+      return;
+    }
     try {
+      const formattedTime = dayjs(selectedTime).format(
+        "YYYY-MM-DDTHH:mm:ss[Z]"
+      );
       await axios.put(
         // `http://localhost:3000/api/appointments`,
         `http://localhost:3000/api/appointments/${appointmentId}`,
-        payload
+        { ...payload, user_id: userInfo?.userId, date_time: formattedTime }
       );
       router.push("/clients/home/booking");
     } catch (error) {
@@ -86,6 +148,8 @@ export default function AddEmployee() {
   } = useForm({
     resolver: zodResolver(schema),
   });
+  const selectedBarber = watch("position");
+  const selectedDate = watch("date_time");
   useEffect(() => {
     fetchEmployees();
     fetchEmployeesList();
@@ -118,6 +182,31 @@ export default function AddEmployee() {
       console.error("Error fetching employee:", error);
     }
   };
+  const fetchBookedTimes = async (barberId, date) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/appointments/booked?barberId=${barberId}&date=${date}`
+      );
+      console.log("🚀 ~ fetchBookedTimes ~ response:", response);
+
+      if (response.status === 200) {
+        const bookedData = response.data.map((appointment) =>
+          moment(appointment.appointment_time).utc().format("HH:mm")
+        );
+
+        console.log("🚀 ~ fetchBookedTimes ~ bookedData:", bookedData);
+        setBookedTimes(bookedData);
+      }
+    } catch (error) {
+      console.error("Error fetching booked times:", error);
+      setBookedTimes([]);
+    }
+  };
+  useEffect(() => {
+    if (selectedBarber && selectedDate) {
+      fetchBookedTimes(selectedBarber, selectedDate);
+    }
+  }, [selectedBarber, selectedDate]);
   const selectedPositionId = watch("position");
   return (
     <>
@@ -184,6 +273,35 @@ export default function AddEmployee() {
               )}
             </div>
           </div>
+          {selectedBarber && (
+            <>
+              <div>
+                <label className="text-gray-700 font-bold">เลือกวัน</label>
+                <input
+                  type="date"
+                  className="w-full border rounded px-3 py-2"
+                  {...register("date_time")}
+                />
+              </div>
+
+              {/* ถ้าเลือกวันแล้วถึงจะแสดง Time Slots */}
+              {selectedDate && (
+                <>
+                  <label className="text-gray-700 font-bold">เลือกเวลา</label>
+                  <TimeSlots
+                    selectedDate={selectedDate}
+                    onSelectTime={setSelectedTime}
+                    bookedTimes={bookedTimes}
+                    selectedTime={selectedTime}
+                  />
+                  <p className="text-center text-lg font-semibold mt-2">
+                    เลือกเวลา:{" "}
+                    {selectedTime ? selectedTime.format("HH:mm") : "-"}
+                  </p>
+                </>
+              )}
+            </>
+          )}
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3">
               <label

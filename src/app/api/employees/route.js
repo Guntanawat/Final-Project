@@ -15,12 +15,33 @@ export async function GET(request) {
           name: true,
           position: true,
           _count: {
-            select: { appointments: true }, // นับจำนวนการนัดหมายของพนักงานแต่ละคน
+            select: { appointments: true }, // นับจำนวนการนัดหมายทั้งหมดของพนักงานแต่ละคน
+          },
+          appointments: {
+            where: {
+              status: "success",
+            },
+            select: {
+              id: true,
+            },
           },
         },
       });
 
-      return Response.json({ employees: employeesWithAppointmentCount });
+      // แปลงข้อมูลเพื่อเพิ่มจำนวน success appointments
+      const employeesWithCounts = employeesWithAppointmentCount.map(
+        (employee) => ({
+          id: employee.id,
+          name: employee.name,
+          position: employee.position,
+          _count: {
+            appointments: employee._count.appointments,
+            successAppointments: employee.appointments.length,
+          },
+        })
+      );
+
+      return Response.json({ employees: employeesWithCounts });
     }
 
     // ดึงข้อมูลพนักงานทั้งหมด (ยกเว้น admin)

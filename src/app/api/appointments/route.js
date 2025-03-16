@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-
+import dayjs from "dayjs";
 const prisma = new PrismaClient();
 
 export async function GET(request) {
@@ -8,19 +8,28 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employee_id");
 
-    // ตรวจสอบว่า employee_id ถูกส่งมาหรือไม่
-    const whereCondition = employeeId
-      ? { employee_id: Number(employeeId) }
-      : {};
+    // กำหนดช่วงเวลาของวันนี้
+    const startOfDay = dayjs().startOf("day").toDate();
+    console.log("🚀 ~ GET ~ startOfDay:", startOfDay);
+    const endOfDay = dayjs().endOf("day").toDate();
+    console.log("🚀 ~ GET ~ endOfDay:", endOfDay);
 
-    // ดึงข้อมูล appointments โดยกรองตาม employee_id (ถ้ามี)
+    // ตรวจสอบว่า employee_id ถูกส่งมาหรือไม่
+    const whereCondition = {
+      ...(employeeId ? { employee_id: Number(employeeId) } : {}),
+      appointment_time: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    };
+
+    // ดึงข้อมูล appointments ของวันนี้
     const appointments = await prisma.appointments.findMany({
       where: whereCondition,
       include: {
         employee: true,
       },
     });
-    console.log("🚀 ~ GET ~ appointments:", appointments);
 
     // กำหนดลำดับความสำคัญของสถานะ
     const statusPriority = {
@@ -31,8 +40,6 @@ export async function GET(request) {
 
     // เรียงลำดับข้อมูลตามสถานะที่กำหนด
     const sortedAppointments = [...appointments].sort((a, b) => {
-      // ถ้าสถานะอยู่ในรายการที่กำหนด ใช้ลำดับตามที่กำหนด
-      // ถ้าไม่อยู่ในรายการ จะถูกจัดให้อยู่ท้ายสุด
       const priorityA = statusPriority[a.status] || 999;
       const priorityB = statusPriority[b.status] || 999;
 

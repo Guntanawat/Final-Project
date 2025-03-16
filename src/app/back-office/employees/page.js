@@ -62,7 +62,7 @@ const Customers = () => {
       toast.error("Failed to delete the appointment.");
     }
   };
-  if (user.position !== "admin")
+  if (user?.position !== "admin")
     window.location.href = "/back-office/home-page";
   return (
     <>
@@ -89,6 +89,9 @@ const Customers = () => {
                 Count
               </th>
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
+                ตัดสำเร็จ
+              </th>
+              <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Joined At
               </th>
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
@@ -110,6 +113,9 @@ const Customers = () => {
                   </td>
                   <td className="p-4 text-[15px] text-gray-800">
                     {employee?._count?.appointments}
+                  </td>
+                  <td className="p-4 text-[15px] text-gray-800">
+                    {employee?._count?.successAppointments}
                   </td>
                   <td className="p-4 text-[15px] text-gray-800">
                     {moment(employee.created_at).format("YYYY-MM-DD")}

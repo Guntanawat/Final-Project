@@ -9,10 +9,40 @@ export async function GET(request) {
     const employeeId = searchParams.get("employee_id");
 
     // กำหนดช่วงเวลาของวันนี้
-    const startOfDay = dayjs().startOf("day").toDate();
-    console.log("🚀 ~ GET ~ startOfDay:", startOfDay);
-    const endOfDay = dayjs().endOf("day").toDate();
-    console.log("🚀 ~ GET ~ endOfDay:", endOfDay);
+    const now = new Date();
+    const timezoneOffset = 7 * 60 * 60 * 1000; // Offset 7 ชั่วโมง
+
+    // คำนวณวันปัจจุบันในเขตเวลาไทย
+    const localDate = new Date(now.getTime() + timezoneOffset);
+
+    // ตั้งค่าให้เป็น 00:00:00.000 (เริ่มต้นของวัน)
+    const startOfDay = new Date(
+      Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth(),
+        localDate.getUTCDate(),
+        0,
+        0,
+        0,
+        0
+      )
+    );
+
+    // ตั้งค่าให้เป็น 23:59:59.999 (สิ้นสุดของวัน)
+    const endOfDay = new Date(
+      Date.UTC(
+        localDate.getUTCFullYear(),
+        localDate.getUTCMonth(),
+        localDate.getUTCDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    );
+
+    console.log("🚀 ~ GET ~ startOfDay:", startOfDay.toISOString());
+    console.log("🚀 ~ GET ~ endOfDay:", endOfDay.toISOString());
 
     // ตรวจสอบว่า employee_id ถูกส่งมาหรือไม่
     const whereCondition = {

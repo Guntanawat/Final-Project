@@ -56,8 +56,10 @@ const BookingPage = () => {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "pending":
+        return "bg-gray-100 text-gray-800";
+      case "booked":
         return "bg-yellow-100 text-yellow-800";
-      case "confirmed":
+      case "success":
         return "bg-green-100 text-green-800";
       case "cancelled":
         return "bg-red-100 text-red-800";
@@ -149,10 +151,11 @@ const BookingPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          "confirmed"
+                          appointment.status
                         )}`}
                       >
-                        {"Booked"}
+                        {appointment.status}
+                        {/* {"Booked"} */}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

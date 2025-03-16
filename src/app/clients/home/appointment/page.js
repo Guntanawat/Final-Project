@@ -27,7 +27,11 @@ const TimeSlots = ({
   onSelectTime,
   bookedTimes,
   selectedTime,
+  isCurrentDate,
+  currentTimeCheck,
 }) => {
+  console.log("🚀 ~ bookedTimes:", bookedTimes);
+  console.log("🚀 ~ isCurrentDate:", isCurrentDate);
   const startTime = dayjs(selectedDate).set("hour", 9).set("minute", 0);
   const endTime = dayjs(selectedDate).set("hour", 20).set("minute", 30);
   const timeSlots = [];
@@ -42,7 +46,9 @@ const TimeSlots = ({
     <div className="grid grid-cols-3 gap-2">
       {timeSlots.map((time, index) => {
         const formattedTime = time.format("HH:mm");
-        const isBooked = bookedTimes?.includes(formattedTime);
+        const isBooked =
+          bookedTimes?.includes(formattedTime) ||
+          (isCurrentDate && formattedTime < currentTimeCheck);
         const isActive = selectedTime?.format("HH:mm") === formattedTime;
 
         return (
@@ -72,7 +78,12 @@ export default function AddEmployee() {
   const [bookedTimes, setBookedTimes] = useState([]);
   console.log("🚀 ~ AddEmployee ~ bookedTimes:", bookedTimes);
   const [selectedTime, setSelectedTime] = useState(null);
-  console.log("🚀 ~ AddEmployee ~ selectedTime:", selectedTime);
+
+  // เพิ่มตัวแปรวันปัจจุบันและเวลาปัจจุบัน
+  const currentDate = dayjs().format("YYYY-MM-DD");
+  console.log("🚀 ~ AddEmployee ~ currentDate:", currentDate);
+  const currentTime = dayjs().format("HH:mm");
+  console.log("🚀 ~ AddEmployee ~ currentTime:", currentTime);
 
   function getUserInfoFromToken() {
     const token = localStorage.getItem("token");
@@ -97,6 +108,7 @@ export default function AddEmployee() {
 
   const selectedBarber = watch("position");
   const selectedDate = watch("date_time");
+  console.log("🚀 ~ AddEmployee ~ selectedDate:", selectedDate);
 
   const fetchEmployeesList = async () => {
     try {
@@ -151,6 +163,7 @@ export default function AddEmployee() {
         const bookedData = response.data.map((appointment) =>
           moment(appointment.appointment_time).utc().format("HH:mm")
         );
+        console.log("🚀 ~ fetchBookedTimes ~ bookedData:", bookedData);
 
         console.log("🚀 ~ fetchBookedTimes ~ bookedData:", bookedData);
         setBookedTimes(bookedData);
@@ -240,6 +253,8 @@ export default function AddEmployee() {
                     onSelectTime={setSelectedTime}
                     bookedTimes={bookedTimes}
                     selectedTime={selectedTime}
+                    isCurrentDate={selectedDate.includes(currentDate)}
+                    currentTimeCheck={currentTime}
                   />
                   <p className="text-center text-lg font-semibold mt-2">
                     เลือกเวลา:{" "}

@@ -20,8 +20,26 @@ export async function GET(request) {
         employee: true,
       },
     });
+    console.log("🚀 ~ GET ~ appointments:", appointments);
 
-    return new Response(JSON.stringify(appointments), { status: 200 });
+    // กำหนดลำดับความสำคัญของสถานะ
+    const statusPriority = {
+      pending: 1,
+      booked: 2,
+      success: 3,
+    };
+
+    // เรียงลำดับข้อมูลตามสถานะที่กำหนด
+    const sortedAppointments = [...appointments].sort((a, b) => {
+      // ถ้าสถานะอยู่ในรายการที่กำหนด ใช้ลำดับตามที่กำหนด
+      // ถ้าไม่อยู่ในรายการ จะถูกจัดให้อยู่ท้ายสุด
+      const priorityA = statusPriority[a.status] || 999;
+      const priorityB = statusPriority[b.status] || 999;
+
+      return priorityA - priorityB;
+    });
+
+    return new Response(JSON.stringify(sortedAppointments), { status: 200 });
   } catch (error) {
     console.error("Error fetching appointments:", error);
     return new Response(

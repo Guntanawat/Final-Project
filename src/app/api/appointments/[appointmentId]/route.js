@@ -57,6 +57,25 @@ export async function PUT(request, { params }) {
     // 📌 อ่านข้อมูลจาก request body
     const body = await request.json();
     console.log("🚀 ~ PUT ~ body:", body);
+
+    // ตรวจสอบว่ามีเฉพาะ status หรือไม่
+    if (body.statusOnly && body.status) {
+      // อัพเดทเฉพาะสถานะ
+      const updatedAppointment = await prisma.appointments.update({
+        where: { id: appointmentId },
+        data: { status: body.status },
+      });
+
+      return new Response(
+        JSON.stringify({
+          message: "Appointment status updated successfully",
+          updatedAppointment,
+        }),
+        { status: 200 }
+      );
+    }
+
+    // กรณีอัพเดทข้อมูลทั้งหมด (โค้ดเดิม)
     const updatedAppointmentData = {
       name: body.name,
       phone_number: body.phone_number,
@@ -110,59 +129,6 @@ export async function PUT(request, { params }) {
     );
   }
 }
-
-// export async function PUT(request, { params }) {
-//   const appointmentId = params.appointmentId;
-
-//   try {
-//     // ตรวจสอบว่ามี employee ที่ต้องการอัปเดตหรือไม่
-//     const Appointment = await prisma.appointments.findFirst({
-//       where: { id: Number(appointmentId) }, // แปลง id เป็นตัวเลขหากจำเป็น
-//     });
-
-//     if (!Appointment) {
-//       return new Response(
-//         JSON.stringify({ message: "Appointment not found" }),
-//         {
-//           status: 404,
-//         }
-//       );
-//     }
-
-//     // อ่านข้อมูลที่ส่งมาผ่าน request body
-//     const body = await request.json();
-
-//     // อัปเดตข้อมูล Appointment ตาม id
-//     const updatedAppointment = await prisma.appointments.update({
-//       where: { id: Number(appointmentId) },
-//       data: {
-//         name: body.name,
-//         phone_number: body.phone_number,
-//         employee_id: body.position,
-//         user_id: body.user_id,
-//         appointment_time: new Date("2024-08-15T10:00:00Z"),
-//         status: "pending",
-//       },
-//     });
-
-//     // คืนค่าข้อมูล employee ที่อัปเดตสำเร็จ
-//     return new Response(
-//       JSON.stringify({
-//         message: "Appointment updated successfully",
-//         updatedAppointment,
-//       }),
-//       { status: 200 }
-//     );
-//   } catch (error) {
-//     // คืนค่าข้อความแจ้งเตือนหากเกิดข้อผิดพลาด
-//     return new Response(
-//       JSON.stringify({ error: "Error updating appointment" }),
-//       {
-//         status: 500,
-//       }
-//     );
-//   }
-// }
 
 export async function DELETE(request, { params }) {
   const searchParams = request.nextUrl.searchParams;

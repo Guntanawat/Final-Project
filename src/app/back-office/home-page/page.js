@@ -4,7 +4,10 @@ import Link from "next/link";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode"; // Using named import
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import moment from "moment";
+const optionsStatus = ["pending", "booked", "success"];
 const HomePage = () => {
   const [currentPath, setCurrentPath] = useState("home-page");
   const [appointments, setAppointments] = useState([]);
@@ -36,9 +39,19 @@ const HomePage = () => {
     if (response.ok) {
       // ตรวจสอบว่าคำขอสำเร็จหรือไม่
       const data = await response.json(); // แปลง response เป็น JSON
-      return data;
+      setAppointments(data);
     } else {
       throw new Error("Failed to fetch appointments");
+    }
+  };
+  const updateAppointment = async (appointmentId, status) => {
+    const response = await axios.put(
+      // `http://localhost:3000/api/appointments`,
+      `http://localhost:3000/api/appointments/${appointmentId}`,
+      { status, statusOnly: true }
+    );
+    if (response.status === 200) {
+      fetchAppointments();
     }
   };
   const deleteAppointment = async (appointmentId) => {
@@ -48,8 +61,7 @@ const HomePage = () => {
     );
     console.log("🚀 ~ deleteAppointment ~ reponse:", reponse);
     if (reponse.status === 200) {
-      const updatedAppointments = await fetchAppointments();
-      setAppointments(updatedAppointments);
+      await fetchAppointments();
     } else {
       toast.error("Failed to delete the appointment.");
     }
@@ -60,16 +72,14 @@ const HomePage = () => {
     // }
     const getAppointments = async () => {
       try {
-        const appointments = await fetchAppointments();
-        setAppointments(appointments);
-        console.log("fetchEmployees: ", appointments); // จะแสดงข้อมูล JSON ที่ถูกต้อง
+        await fetchAppointments();
       } catch (error) {
         console.error("Error fetching employees:", error);
       }
     };
-
     getAppointments(); // เรียกใช้งานฟังก์ชันที่เราสร้างเพื่อดึงข้อมูล
   }, []);
+
   return (
     <div className="font-sans overflow-x-auto h-screen w-full mx-[20px] flex items-start justify-center">
       <table className="min-w-full bg-white">
@@ -87,6 +97,9 @@ const HomePage = () => {
             <th className="p-4 text-left text-xs font-semibold text-gray-800">
               Employee
             </th>
+            <th className="p-4 text-left text-xs font-semibold text-gray-800">
+              status
+            </th>
             {user?.position === "admin" ||
               (true && (
                 <th className="p-4 text-left text-xs font-semibold text-gray-800">
@@ -97,7 +110,7 @@ const HomePage = () => {
         </thead>
 
         <tbody className="whitespace-nowrap">
-          {appointments.map((appointment) => {
+          {appointments?.map((appointment) => {
             return (
               <tr className="hover:bg-gray-50" key={appointment.id}>
                 <td className="p-4 text-[15px] text-gray-800">
@@ -122,6 +135,19 @@ const HomePage = () => {
                 <td className="p-4 text-[15px] text-gray-800">
                   {appointment.employee.name}
                 </td>
+                <Select
+                  className="w-full"
+                  value={appointment.status}
+                  onChange={(event) =>
+                    updateAppointment(appointment.id, event.target.value)
+                  }
+                >
+                  {optionsStatus.map((employee) => (
+                    <MenuItem key={employee} value={employee}>
+                      {employee}
+                    </MenuItem>
+                  ))}
+                </Select>
                 {user?.position === "admin" ||
                   (true && (
                     <td className="p-4">

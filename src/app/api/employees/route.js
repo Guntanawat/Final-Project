@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
 export async function GET(request) {
   try {
     const searchParams = new URL(request.url).searchParams;
     const count = searchParams.get("count") === "true"; // เช็คว่าค่า count เป็น "true" หรือไม่
+    console.log("🚀 ~ GET ~ count:", count);
     if (count) {
       // ดึงจำนวนพนักงานที่ไม่ใช่แอดมิน พร้อมนับจำนวนการนัดหมายของแต่ละคน
       const employeesWithAppointmentCount = await prisma.employees.findMany({
@@ -31,6 +31,7 @@ export async function GET(request) {
         },
       },
     });
+    console.log("🚀 ~ GET ~ employees:", employees);
 
     return Response.json(employees);
   } catch (error) {
